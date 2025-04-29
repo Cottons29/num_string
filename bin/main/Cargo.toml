@@ -1,0 +1,9 @@
+[package]
+name = "main"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+number_string.workspace = true
+colored.workspace = true
+float_number_string.workspace = true

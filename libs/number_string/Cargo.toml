@@ -1,0 +1,10 @@
+[package]
+name = "number_string"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+regex.workspace = true
+log = "0.4.27"
+colored.workspace = true
+calculate_struct_trait.workspace = true

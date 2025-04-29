@@ -1,0 +1,9 @@
+[package]
+name = "float_number_string"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+number_string.workspace = true
+regex.workspace = true
+calculate_struct_trait.workspace = true

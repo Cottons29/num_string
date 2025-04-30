@@ -1,0 +1,26 @@
+[workspace]
+members = [
+    "bin/*",
+    "libs/*"
+]
+
+resolver = "3"
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+
+[workspace.dependencies]
+
+#local dependencies
+
+number_string = { path = "libs/number_string" }
+calculate_struct_trait = {path = "libs/calculate_struct_trait"}
+float_number_string = { path = "libs/float_number_string" }
+
+#non-local dependencies
+
+regex = "1.11.1"
+colored = "3.0.0"

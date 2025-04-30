@@ -1,3 +1,4 @@
+
 use std::fmt::format;
 use std::io::{Error, ErrorKind};
 use std::ops::Rem;
@@ -6,17 +7,13 @@ use calculate_struct_trait::CalculateStringTrait;
 use number_string::{NumberString};
 #[derive(Clone, Debug)]
 pub struct FloatNumberString{
-    int_part: NumberString,
-    frac_part: NumberString,
-    negative: bool,
+    value: String,
 }
 
 impl FloatNumberString{
     pub fn new() -> FloatNumberString{
         FloatNumberString{
-            int_part: NumberString::new(),
-            frac_part: NumberString::new(),
-            negative: false,
+            value: String::from("0.0")
         }
     }
 
@@ -24,9 +21,19 @@ impl FloatNumberString{
         FloatNumberString::new_with_string(&number.to_string())
     }
 
-    fn remove_useless_float_zero(value: &mut NumberString) -> &NumberString {
-        value.set_zero_count(0);
-        value
+    fn remove_useless_float_zero(value: &mut String) -> String {
+        let chars = value.chars().collect::<Vec<char>>();
+        for index in (0..chars.len()).rev(){
+            if chars[index] == '0' {
+                value.remove(index);
+            }else{
+                break;
+            }
+        }
+        if value.len() == 0{
+            value.push('0');
+        }
+        value.to_string()
     }
 
     pub fn new_with_string(value: &str) -> FloatNumberString {
@@ -39,53 +46,73 @@ impl FloatNumberString{
             None => (value, "0"),
         };
         let mut int_part: NumberString = int_part.into();
-        let mut frac_part: NumberString = frac_part.into();
-        let negative = if int_part.is_negative(){
-            int_part.to_positive();
-            true
-        }else {
-            false
-        };
+        let mut frac_part:String = Self::remove_useless_float_zero(&mut frac_part.to_string());
         // println!("before remove useless float zero : 0.{}", frac_part);
-        Self::remove_useless_float_zero(&mut frac_part);
         // println!("after remove useless float zero : 0.{}", frac_part);
         // println!("full floating number : {}.{}", int_part, frac_part);
-
+        let value =  format!("{}.{}", int_part, frac_part);
         FloatNumberString{
-            int_part,
-            frac_part,
-            negative
+            value
         }
-    }
-    
-    pub fn get_int_part(&self) -> NumberString{
-        self.clone().int_part
-    }
-    
-    pub fn get_frac_part(&self) -> NumberString{
-        self.clone().frac_part
-    }
-    
-    pub fn match_frac(&mut self, other: &FloatNumberString){
-        if self.frac_part.len() > other.frac_part.len(){
-            return
-        }
-        if self.frac_part.len() == other.frac_part.len(){
-            return
-        }
-        let diff_frac_len = other.frac_part.len() - self.frac_part.len();
-        self.frac_part.set_zero_count(diff_frac_len as u16)
     }
     
     pub fn get_no_dot(&self) -> NumberString{
-        let sign = if self.negative { "-" } else { "" };
-        format!("{}{}{}",sign, self.int_part, self.frac_part).into()
+        let mut temp = self.value.clone();
+        temp = temp.replace(".","");
+        NumberString::from(temp)
+    }
+    pub fn is_positive(&self) -> bool{
+        if self.value.starts_with('-'){
+            return false;
+        }
+        true
+    }
+    pub fn is_negative(&self) -> bool{
+        !self.is_positive()
     }
     
-    pub fn to_friendly(&self) -> String{
-        self.value().to_string()
+    pub fn split_int_frac(&self) -> (NumberString, String){
+        let (int_part, frac_part) = match self.value.clone().split_once(".") { 
+            Some((int_part, frac_part)) => (int_part.to_string(), frac_part.to_string()),
+            None => ("0".to_string(), "0".to_string())
+        };
+        (NumberString::from(int_part), frac_part)
     }
-
+    
+    pub fn get_frac_len(&self) -> usize{
+        let temp = self.value.clone();
+        let mut counter = 0;
+        for char in temp.chars().rev(){
+            if char == '.'{
+                break
+            }else{
+                counter += 1;
+            }
+        }
+        println!("value: {} | frac_len : {}", temp, counter);
+        counter
+    }
+    
+    pub fn match_frac(&mut self, other: &mut Self){
+        let (self_int_part, mut self_frac_part) = self.split_int_frac();
+        let (other_int_part, mut other_frac_part) = other.split_int_frac();
+        let diff_len = if self_frac_part.len() > other_frac_part.len() {
+                                self_frac_part.len() - other_frac_part.len()
+                            }else{
+                                other_frac_part.len() - self_frac_part.len()
+                            };
+        let other_frac_part_len = other_frac_part.len();
+        let self_frac_part_len = self_frac_part.len();
+        for _ in 0..diff_len  {
+            if other_frac_part_len > self_frac_part_len{
+                self_frac_part.push_str("0");
+            }else{
+                other_frac_part.push_str("0");
+            }
+        }
+        self.value = format!("{}.{}", self_int_part, self_frac_part);
+        other.value = format!("{}.{}", other_int_part, other_frac_part);
+    }
 }
 
 
@@ -95,13 +122,7 @@ impl CalculateStringTrait<FloatNumberString> for FloatNumberString{
     }
     
     fn value(&self) -> String {
-        let sign: String = match &self.negative {
-            false => String::from(""),
-            true => String::from("-")
-        };
-        let fl_string = self.clone();
-        let temp = format!("{}{}.{}",sign ,fl_string.int_part, fl_string.frac_part);
-        temp
+        self.value.clone()
     }
 
     fn to_char(&self) -> Vec<char> {
@@ -109,40 +130,43 @@ impl CalculateStringTrait<FloatNumberString> for FloatNumberString{
     }
 
     fn increment(&mut self) {
-        self.int_part.increment();
+        // self.int_part.increment();
     }
 
     fn decrement(&mut self) {
-        self.int_part.decrement();
+        // self.int_part.decrement();
     }
 
     fn equals(&self, other: &FloatNumberString) -> bool {
-        self.int_part == other.int_part && self.frac_part == other.frac_part && self.negative == other.negative 
+        let (self_int_part, self_frac_part) = self.split_int_frac();
+        let (other_int_part, other_frac_part) = other.split_int_frac();
+        if self_int_part > other_int_part || self_int_part < other_int_part{
+            return false;
+        }
+        if self_frac_part != other_frac_part{
+            return false;
+        }
+        true
     }
 
     fn is_negative(&self) -> bool {
-        self.negative
+        self.value.starts_with('-')
     }
 
     fn is_positive(&self) -> bool {
-        !self.int_part.is_positive()
+        !self.is_negative()
     }
 
     fn is_greater_than(&self, other: &FloatNumberString) -> bool {
-        if !self.negative {
-            if other.negative{
-                return true;
-            }
+        let (self_int_part, self_frac_part) = self.split_int_frac();
+        let (other_int_part, other_frac_part) = other.split_int_frac();
+        if self_int_part > other_int_part{
+            return true
         }
         
-        if self.int_part > other.int_part {
-            return true;
-        }
-        if self.int_part == other.int_part {
-            if self.frac_part > other.frac_part {
-                return true;
-            }
-        }
+        let self_chars = self_frac_part.chars().collect::<Vec<char>>();
+        let other_chars = other_frac_part.chars().collect::<Vec<char>>();
+        
         
         false
     }
@@ -160,18 +184,24 @@ impl CalculateStringTrait<FloatNumberString> for FloatNumberString{
     }
 
     fn to_unsigned(&self) -> FloatNumberString {
-        let temp = self.clone();
-        temp.int_part.to_unsigned();
+        let mut temp =self.clone();
+        if !self.is_positive(){
+            temp.value = temp.value.trim_start_matches("-").to_string();
+        }
         temp
         
     }
 
     fn to_negative(&mut self) {
-        self.negative = true;
+        if self.is_positive(){
+            self.value.insert(0,'-');
+        }
     }
 
     fn to_positive(&mut self) {
-        self.negative = false;
+        if self.is_negative(){
+            self.value = self.value.replace('-', "");
+        }
     }
     
 }

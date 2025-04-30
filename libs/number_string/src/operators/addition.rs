@@ -6,14 +6,16 @@ impl Add for NumberString {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
+        if self.is_zero(){
+            return other;
+        }
+        if other.is_zero(){
+            return self;
+        }
         let mut is_positive = true;
         if self.is_negative() && other.is_negative(){
             if self == other {
                 is_positive = false;
-            }else if self.to_unsigned() > other.to_unsigned() {
-                let mut result = self.to_unsigned() - other.to_unsigned();
-                result.to_negative();
-                return result
             } else {
                 let mut result = other.to_unsigned() + self.to_unsigned();
                 result.to_negative();
@@ -38,6 +40,8 @@ impl Add for NumberString {
 
         let chars_a = a.to_char();
         let chars_b = b.to_char();
+        // println!("char_a len : {} |char_b len : {}", chars_a.len(), chars_b.len());
+        // println!("value a : {} | value b : {} ", a, b);
         let mut result = String::new();
         let mut carry = 0;
 
@@ -59,7 +63,6 @@ impl Add for NumberString {
         if !is_positive {
             result.insert(0, '-');
         }
-
         NumberString::new_with_string(&result).unwrap()
     }
 }

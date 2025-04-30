@@ -1,11 +1,24 @@
 use std::ops::Sub;
-use colored::Colorize;
 use calculate_struct_trait::CalculateStringTrait;
 use crate::NumberString;
 
 impl Sub for NumberString {
     type Output = NumberString;
     fn sub(self, other: Self) -> Self::Output {
+        if self.is_zero(){
+            return if other.is_negative() {
+                let mut temp = other.clone();
+                temp.to_positive();
+                temp
+            } else {
+                let mut temp = other.clone();
+                temp.to_negative();
+                temp
+            }
+        }
+        if other.is_zero(){
+            return self;
+        }
 
         if self.is_negative() && other.is_negative() {
             if self > other {

@@ -8,10 +8,14 @@ impl Add for FloatNumberString {
     type Output = FloatNumberString;
     fn add(mut self, mut other: FloatNumberString) -> Self::Output {
         (self, other) = set_frac_pair(self, other);
-        let frac_len = self.get_frac_part().len();
+        println!("after set frac_pair num1 : {}", self);
+        println!("after set frac_pair num2 : {}", other);
+        let frac_len = other.get_frac_len();
+        println!("frac_len : {}", frac_len);
         let temp_result = self.get_no_dot() + other.get_no_dot();
+        println!("temp_result : {}", temp_result);
         let final_res = set_dot(temp_result, frac_len);
-        // println!("self = {}, other = {}", self, other);
+        println!("self = {}, other = {}", self, other);
         
         final_res
     }

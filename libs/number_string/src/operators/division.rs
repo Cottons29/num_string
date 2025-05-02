@@ -68,28 +68,19 @@ pub fn div_helper(first: NumberString, sec: NumberString) -> (NumberString, Numb
     let mut shifted_divisor = sec.clone();
 
     let diff_len = first.len() - sec.len();
-    println!("diff_ len {}", diff_len);
     shifted_divisor.set_zero_count(diff_len as u16); // equivalent to multiplying by 10^diff_len
     let mut to_break = false;
     loop {
-        
-        sleep(Duration::from_millis(200));
-        println!("division is running");
-        println!("shifted_divisor = {}", shifted_divisor);
         if shifted_divisor.clone() < sec {
-            println!("shifted_divisor.clone() < sec == true");
-            // res.push(char::from_digit(0u32, 10).unwrap());
             break;
         }
         if shifted_divisor.clone() == sec {
-            println!("shifted_divisor.clone() == sec == true");
-            // res.push(char::from_digit(0u32, 10).unwrap());
             to_break = true;
         }
 
         // Find max digit d (1..=9) such that shifted_divisor * d <= remainder
         let mut digit = 0;
-        for d in 1..=9 {
+        for d in 0..10 {
             let product = shifted_divisor.clone() * NumberString::from(d);
             if product <= remainder {
                 digit = d;
@@ -101,17 +92,14 @@ pub fn div_helper(first: NumberString, sec: NumberString) -> (NumberString, Numb
         // Subtract and append result digit
         let product = shifted_divisor.clone() * NumberString::from(digit);
         remainder = remainder - product;
-        println!("pushed a digit  {}", digit);
         res.push(char::from_digit(digit as u32, 10).unwrap());
-
-        // Reduce divisor (shift right by 1 decimal place)
         shifted_divisor.pop_zero();
-        println!("division is pop a digit");
         if to_break {
             break;
         }
+        
     }
-    println!("remainder = {}", remainder);
-    println!("{} {}", "final division result = {}".bright_green().bold(), res);
+    println!("{} {}", "remainder = ".bright_green().bold(), remainder);
+    println!("{} {}", "final division result = ".bright_green().bold(), res);
     (NumberString::from(res), remainder)
 }

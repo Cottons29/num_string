@@ -1,4 +1,6 @@
+#[cfg(test)]
 mod test;
+
 
 use std::collections::HashMap;
 use std::iter::Map;
@@ -7,13 +9,8 @@ use colored::{ColoredString, Colorize};
 use rand::Rng;
 use number_string::NumberString;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // test_random_multiply();
-    let number1 = NumberString::from("814742273982937866670267012036612826553710913");
-    let number2 = NumberString::from("756545270190436525319163108548750744679063400");
-    println!("number1 : {}", number1);
-    println!("number2 : {}", number2);
-    let res = number1 * number2;
-    println!("res: {}", res);
+
+    
     Ok(())
 }
 

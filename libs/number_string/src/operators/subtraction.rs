@@ -1,4 +1,5 @@
 use std::ops::Sub;
+use colored::Colorize;
 use calculate_struct_trait::CalculateStringTrait;
 use crate::NumberString;
 
@@ -6,27 +7,37 @@ impl Sub for NumberString {
     type Output = NumberString;
     fn sub(self, other: Self) -> Self::Output {
         if self.is_zero(){
-            return if other.is_negative() {
+            // o - (-a) = a
+            if other.is_negative() {
                 let mut temp = other.clone();
                 temp.to_positive();
-                temp
-            } else {
+                return temp
+            }
+            // o - a = -a
+            if other.is_positive(){
                 let mut temp = other.clone();
                 temp.to_negative();
-                temp
+                return temp
             }
         }
+        
+        // a - 0 = a
         if other.is_zero(){
-            return self;
+            return self.clone();
         }
-
+        // -a - (-b) = -a + b
         if self.is_negative() && other.is_negative() {
+            // a > b
+            // res = sign of a
             if self > other {
                 // println!("{} > {} result.negate", self, other);
                 let mut result =  self.to_unsigned() - other.to_unsigned();
                 result.to_positive();
                 return result
             }
+            
+            // a < b 
+            // res =  sign of b 
             if self < other {
                 // println!("{} < {} result.positive", self, other);
                 let mut result =  other.to_unsigned() - self.to_unsigned();
@@ -55,7 +66,7 @@ impl Sub for NumberString {
         let (number_a, number_b) = if self.len() > other.len() {
             (self.clone(), other.pad_to_match(&self))
         } else {
-            (self.pad_to_match(&other), other)
+            (self.pad_to_match(&other), other.clone())
         };
         
         let (chars_a, chars_b) = if is_positive_res{
@@ -67,24 +78,27 @@ impl Sub for NumberString {
         let mut loan = 0;
 
         for i in (0..chars_a.len()).rev() {
-            // println!("{} {} {}", "digit 1 : {} | digit 2 : {}".bright_green().bold(), chars_a[i], chars_b[i]);
-            let digit1: i8 = chars_a[i].to_digit(10).unwrap() as i8;
+            
+            let mut digit1: i8 = chars_a[i].to_digit(10).unwrap() as i8;
             let digit2: i8 = chars_b[i].to_digit(10).unwrap() as i8;
             
-            let mut sub: i8 = digit1 - (digit2 + loan);
+            let sec_sub = digit2 + loan;
+            loan = 0;
             
-            if sub < 0 {
-                loan =  1;
-                sub = -sub;
-            }else{
-                loan = 0;
+            if sec_sub > digit1{
+                digit1 += 10;
+                loan = 1;
             }
-
-            sub %= 10;
+            
+            let sub = digit1 - sec_sub;
+            
+            println!("{}",
+                     format!("after remainder({}) - product({}) = {} || loan = {}", digit1, digit2, sub, loan).bright_green().bold()
+            );
             // println!("sub result is = {:?}", sub);
              result.insert(0, std::char::from_digit(sub as u8 as u32, 10).unwrap());
         }
-
+  
         // Handle carry at the highest digit
         if loan > 0 {
             result.insert(0, std::char::from_digit(loan as u32, 10).unwrap());
@@ -95,7 +109,9 @@ impl Sub for NumberString {
         if !is_positive_res {
             result.insert(0, '-');
         }
-        // println!("final sub result is = {:?}", result);
+        println!("{}",
+                 format!("after first({}) - sec({}) = {}", self, other, result, ).bright_green().bold()
+        );
         NumberString::new_with_string(&result).unwrap()
     }
 }

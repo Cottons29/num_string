@@ -45,8 +45,8 @@ impl FloatNumberString{
             Some((int_part, frac_part)) => (int_part, frac_part),
             None => (value, "0"),
         };
-        let mut int_part: NumberString = int_part.into();
-        let mut frac_part:String = Self::remove_useless_float_zero(&mut frac_part.to_string());
+        let int_part: NumberString = int_part.into();
+        let frac_part:String = Self::remove_useless_float_zero(&mut frac_part.to_string());
         // println!("before remove useless float zero : 0.{}", frac_part);
         // println!("after remove useless float zero : 0.{}", frac_part);
         // println!("full floating number : {}.{}", int_part, frac_part);
